@@ -7,6 +7,7 @@ public enum ErrorCode {
     USER_EXISTED(1002,"User already existed"),
 
 
+
     INVALID_USERNAME(1003,"Invalid username"),
     INVALID_LENGTH_PASSWORD(1004,"Password must be at least 8 characters."),
     INVALID_PASSWORD(1005,"Minimum eight characters, at least one letter, one number and one special character."),
@@ -15,10 +16,14 @@ public enum ErrorCode {
 
 
     UNCATEGORIZED(9999,"Uncategorized error"),
-
+    PARSE_EXCEPTION(9998,"Parse exception"),
 
 
     DATETIME_PARSE_EXCEPTION(2000,"Date and time parse error"),
+
+
+
+    UNAUTHENTICATED(3000,"Unauthenticated error"),
     ;
 
 

@@ -1,21 +1,17 @@
 package dev.pdanh.hello_spring.exception;
 
 import dev.pdanh.hello_spring.dto.response.APIResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.text.ParseException;
 import java.time.format.DateTimeParseException;
 
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-    //catch theo loai exception
-
     //catch theo loai exception
     @ExceptionHandler(AppException.class)
     ResponseEntity<APIResponse> appExceptionHandler(AppException e) {
@@ -49,6 +45,13 @@ public class GlobalExceptionHandler {
         APIResponse apiResponse = new APIResponse();
         apiResponse.setMessage(ErrorCode.DATETIME_PARSE_EXCEPTION.getMessage());
         apiResponse.setCode(ErrorCode.DATETIME_PARSE_EXCEPTION.getCode());
+        return ResponseEntity.badRequest().body(apiResponse);
+    }
+    @ExceptionHandler(ParseException.class)
+    ResponseEntity<APIResponse> parseExceptionHandler(ParseException e) {
+        APIResponse apiResponse = new APIResponse();
+        apiResponse.setMessage(ErrorCode.PARSE_EXCEPTION.getMessage());
+        apiResponse.setCode(ErrorCode.PARSE_EXCEPTION.getCode());
         return ResponseEntity.badRequest().body(apiResponse);
     }
 //    @ExceptionHandler(Exception.class)

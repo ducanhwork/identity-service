@@ -4,7 +4,6 @@ import dev.pdanh.hello_spring.dto.request.UserCreateRequest;
 import dev.pdanh.hello_spring.dto.request.UserUpdateRequest;
 import dev.pdanh.hello_spring.dto.response.APIResponse;
 import dev.pdanh.hello_spring.dto.response.UserResponse;
-import dev.pdanh.hello_spring.entity.User;
 import dev.pdanh.hello_spring.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;

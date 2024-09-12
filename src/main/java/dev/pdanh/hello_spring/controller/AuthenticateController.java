@@ -1,8 +1,10 @@
 package dev.pdanh.hello_spring.controller;
 
 import dev.pdanh.hello_spring.dto.request.AuthenticateRequest;
+import dev.pdanh.hello_spring.dto.request.IntrospectRequest;
 import dev.pdanh.hello_spring.dto.response.APIResponse;
 import dev.pdanh.hello_spring.dto.response.AuthenticateResponse;
+import dev.pdanh.hello_spring.dto.response.IntrospectResponse;
 import dev.pdanh.hello_spring.service.AuthenticationService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -19,14 +21,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticateController {
     AuthenticationService authenticationService;
 
-    @PostMapping("/log-in")
+    @PostMapping("/token")
     public APIResponse<AuthenticateResponse> authenticate(@RequestBody AuthenticateRequest authenticateRequest) {
-        boolean authenticated = authenticationService.authenticate(authenticateRequest);
+        AuthenticateResponse authenticated = authenticationService.authenticate(authenticateRequest);
         return APIResponse.<AuthenticateResponse>builder()
+                 .code(200)
+                .data(authenticated)
+                .build();
+    }
+    @PostMapping("/introspect")
+    public APIResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest introspectRequest) {
+        var result = authenticationService.introspect(introspectRequest);
+        return APIResponse.<IntrospectResponse>builder()
                 .code(200)
-                .data(AuthenticateResponse.builder()
-                        .authenticated(authenticated)
-                        .build())
+                .data(result)
                 .build();
     }
 }
