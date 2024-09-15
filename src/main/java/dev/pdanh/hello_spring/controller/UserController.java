@@ -9,6 +9,9 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/identity/users")
 public class UserController {
+    private static final Logger log = LogManager.getLogger(UserController.class);
     UserService userService;
 
     @PostMapping()
@@ -30,6 +34,10 @@ public class UserController {
 
     @GetMapping
     public APIResponse<List<UserResponse>> getUsers() {
+       var authentication =  SecurityContextHolder.getContext().getAuthentication();
+
+       log.info("Username : {}", authentication.getName());
+       authentication.getAuthorities().forEach(grantedAuthority -> log.info(grantedAuthority.getAuthority()));
         return APIResponse.<List<UserResponse>>builder()
                 .code(200)
                 .data(userService.getUsers())

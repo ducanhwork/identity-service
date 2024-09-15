@@ -1,5 +1,4 @@
 package dev.pdanh.hello_spring.service;
-
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -23,11 +22,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.StringJoiner;
 
 @Service
 @RequiredArgsConstructor
@@ -69,7 +68,7 @@ public class AuthenticationService {
             // neu chua duoc xac thuc thanh cong thi tra ve exception
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
-        var token = generateToken(request.getUsername());
+        var token = generateToken(user);
 
         return AuthenticateResponse.builder()
                 .authenticated(true)
@@ -78,13 +77,13 @@ public class AuthenticationService {
 
     }
 
-    private String generateToken(String username) {
+    private String generateToken(User user) {
         //tao header cho tokem
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
         //payload
         //Claim : la cac data trong body
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(username)//subject cua jwt
+                .subject(user.getUsername())//subject cua jwt
                 .issuer("dev.pdanh")//issue boi ai
                 .issueTime(new Date())//issue luc nao
                 //het han sau bao lau
@@ -92,7 +91,8 @@ public class AuthenticationService {
                         Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
                 ))
                 //custom claim
-                .claim("customClaim", "Custom")
+                //add role to jwt
+                .claim("scope",buildScope(user))
                 .build();
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
         JWSObject jwsObject = new JWSObject(header, payload);
@@ -104,5 +104,12 @@ public class AuthenticationService {
             log.error("Cannot create token");
             throw new RuntimeException(e);
         }
+    }
+    private String buildScope(User user) {
+        StringJoiner stringJoiner = new StringJoiner(" ");
+        if(!user.getRoles().isEmpty()){
+            user.getRoles().forEach(stringJoiner::add);
+        }
+        return stringJoiner.toString();
     }
 }

@@ -5,6 +5,7 @@ import dev.pdanh.hello_spring.dto.request.UserUpdateRequest;
 import dev.pdanh.hello_spring.dto.response.APIResponse;
 import dev.pdanh.hello_spring.dto.response.UserResponse;
 import dev.pdanh.hello_spring.entity.User;
+import dev.pdanh.hello_spring.enums.Role;
 import dev.pdanh.hello_spring.exception.AppException;
 import dev.pdanh.hello_spring.exception.ErrorCode;
 import dev.pdanh.hello_spring.mapper.UserMapper;
@@ -17,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -25,15 +27,18 @@ import java.util.List;
 public class UserService {
     UserRepository userRepository;
     UserMapper userMapper;
-
+    PasswordEncoder passwordEncoder;
     public UserResponse createRequest(UserCreateRequest request) {
-        User user = new User();
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new AppException(ErrorCode.USER_EXISTED);
         }
-        user = userMapper.toUser(request);
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        HashSet<String> roles = new HashSet<>();
+        roles.add(Role.USER.name());
+        user.setRoles(roles);
+
         return userMapper.userToUserResponse(userRepository.save(user));
     }
 
@@ -53,14 +58,12 @@ public class UserService {
 
     public UserResponse updateUser(String userId, UserUpdateRequest request) {
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        userMapper.userUpdateToUser(request,user);
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        userMapper.userUpdateToUser(request, user);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         return userMapper.userToUserResponse(userRepository.save(user));
     }
 
     public void deleteUser(String id) {
-
         userRepository.deleteById(id);
     }
 }
