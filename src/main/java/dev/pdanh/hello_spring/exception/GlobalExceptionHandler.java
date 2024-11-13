@@ -1,7 +1,9 @@
 package dev.pdanh.hello_spring.exception;
 
 import dev.pdanh.hello_spring.dto.response.APIResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -9,59 +11,42 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.text.ParseException;
 import java.time.format.DateTimeParseException;
 
-
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
     //catch theo loai exception
-    @ExceptionHandler(AppException.class)
-    ResponseEntity<APIResponse> appExceptionHandler(AppException e) {
-        // tra ve bad req voi body la message cua error
+
+    @ExceptionHandler(value = Exception.class)
+    ResponseEntity<APIResponse> handlingRuntimeException(RuntimeException exception) {
+        log.error("Exception: ", exception);
         APIResponse apiResponse = new APIResponse();
-        apiResponse.setMessage(e.getErrorCode().getMessage());
-        apiResponse.setCode(e.getErrorCode().getCode());
+
+        apiResponse.setCode(ErrorCode.UNCATEGORIZED.getCode());
+        apiResponse.setMessage(ErrorCode.UNCATEGORIZED.getMessage());
+
         return ResponseEntity.badRequest().body(apiResponse);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    ResponseEntity<APIResponse> methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e) {
+    @ExceptionHandler(value = AppException.class)
+    ResponseEntity<APIResponse> handlingAppException(AppException exception) {
+        ErrorCode errorCode = exception.getErrorCode();
         APIResponse apiResponse = new APIResponse();
-        String enumKey = e.getFieldError().getDefaultMessage();
-        System.out.println(enumKey);
-        ErrorCode errorCode = ErrorCode.INVALID_KEY;
 
-        try {
-            errorCode = ErrorCode.valueOf(enumKey);
-        } catch (IllegalArgumentException exception) {
-
-        }
-
-        apiResponse.setMessage(errorCode.getMessage());
         apiResponse.setCode(errorCode.getCode());
-        return ResponseEntity.badRequest().body(apiResponse);
+        apiResponse.setMessage(errorCode.getMessage());
+
+        return ResponseEntity.status(errorCode.getHttpStatusCode()).body(apiResponse);
     }
 
-    @ExceptionHandler(DateTimeParseException.class)
-    ResponseEntity<APIResponse> dateTimeParseExceptionHandler(DateTimeParseException e) {
-        APIResponse apiResponse = new APIResponse();
-        apiResponse.setMessage(ErrorCode.DATETIME_PARSE_EXCEPTION.getMessage());
-        apiResponse.setCode(ErrorCode.DATETIME_PARSE_EXCEPTION.getCode());
-        return ResponseEntity.badRequest().body(apiResponse);
+    @ExceptionHandler(value = AccessDeniedException.class)
+    ResponseEntity<APIResponse> handlingAccessDeniedException(AccessDeniedException exception) {
+        ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
+
+        return ResponseEntity.status(errorCode.getHttpStatusCode())
+                .body(APIResponse.builder()
+                        .code(errorCode.getCode())
+                        .message(errorCode.getMessage())
+                        .build());
     }
-    @ExceptionHandler(ParseException.class)
-    ResponseEntity<APIResponse> parseExceptionHandler(ParseException e) {
-        APIResponse apiResponse = new APIResponse();
-        apiResponse.setMessage(ErrorCode.PARSE_EXCEPTION.getMessage());
-        apiResponse.setCode(ErrorCode.PARSE_EXCEPTION.getCode());
-        return ResponseEntity.badRequest().body(apiResponse);
-    }
-//    @ExceptionHandler(Exception.class)
-//    ResponseEntity<APIResponse> runtimeExceptionHandler(Exception e) {
-//        // tra ve bad req voi body la message cua error
-//        System.out.println("Exception: " + e.getMessage());
-//        APIResponse apiResponse = new APIResponse();
-//        apiResponse.setMessage(ErrorCode.UNCATEGORIZED.getMessage());
-//        apiResponse.setCode(ErrorCode.UNCATEGORIZED.getCode());
-//        return ResponseEntity.badRequest().body(apiResponse);
-//    }
 
 }

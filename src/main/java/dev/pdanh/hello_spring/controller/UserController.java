@@ -66,4 +66,12 @@ public class UserController {
                 .build();
     }
 
+    @GetMapping("/myInfor")
+    public APIResponse<UserResponse> getMyInfor(){
+        return APIResponse.<UserResponse>builder()
+                .data(userService.getMyInfor())
+                .build();
+    }
+
+
 }
